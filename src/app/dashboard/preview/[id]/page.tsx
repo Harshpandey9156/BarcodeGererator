@@ -27,13 +27,16 @@ export default function BarcodePreviewPage() {
 
   useEffect(() => {
     if (!id) return;
+
     fetch(`/api/barcodes/${id}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Barcode not found");
+        return res.json();
+      })
       .then((data) => setBarcode(data))
       .catch(() => router.push("/dashboard/history"))
       .finally(() => setLoading(false));
-  }, [id, router]);
-  
+  }, [id, router]); // ✅ include router
 
   const markAsPrinted = async () => {
     if (!barcode || barcode.status === "Printed") return;
@@ -68,6 +71,8 @@ export default function BarcodePreviewPage() {
     }
   };
 
+  const isValidEAN13 = (input: string) => /^\d{12}$/.test(input);
+
   if (loading) return <div className="p-10 text-center text-gray-600">Loading...</div>;
   if (!barcode) return <div className="p-10 text-center text-red-600">Barcode not found.</div>;
 
@@ -96,15 +101,17 @@ export default function BarcodePreviewPage() {
           {barcode.format === "QR" ? (
             <QRCode value={barcode.generatedId} size={160} />
           ) : (
-            <svg
-              id="preview-barcode-svg"
-              ref={(el) => {
-                if (el) {
+            barcode.generatedId && (
+              <svg
+                id="preview-barcode-svg"
+                ref={(el) => {
+                  if (!el) return;
                   try {
                     let id = barcode.generatedId.trim();
-                    if (["UPC", "EAN13"].includes(barcode.format)) {
-                      id = id.replace(/\D/g, "");
+                    if (barcode.format === "EAN13" && !isValidEAN13(id)) {
+                      throw new Error("Invalid EAN13 code");
                     }
+
                     JsBarcode(el, id, {
                       format: barcode.format,
                       displayValue: true,
@@ -112,11 +119,11 @@ export default function BarcodePreviewPage() {
                       width: 2,
                     });
                   } catch (e) {
-                    console.error("Barcode render error", e);
+                    console.error(`Barcode render error for ID ${barcode.id}`, e);
                   }
-                }
-              }}
-            />
+                }}
+              />
+            )
           )}
         </div>
 

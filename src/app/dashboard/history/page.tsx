@@ -18,6 +18,15 @@ interface Barcode {
   status?: "Printed" | "Unprinted";
 }
 
+const isValidBarcode = (format: string, value: string) => {
+  const cleaned = value?.trim() || "";
+  if (!cleaned) return false;
+
+  if (format === "EAN13") return /^\d{12}$/.test(cleaned);
+  if (format === "UPC") return /^\d{11,12}$/.test(cleaned);
+  return cleaned.length > 0;
+};
+
 export default function BarcodeHistoryPage() {
   const [barcodes, setBarcodes] = useState<Barcode[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,7 +94,7 @@ export default function BarcodeHistoryPage() {
       link.href = canvas.toDataURL("image/png");
       link.download = `barcode-${b.generatedId}.png`;
       link.click();
-      await markAsPrinted(b.id); // ✅ mark as Printed
+      await markAsPrinted(b.id);
     } catch (err) {
       console.error("Export PNG Error:", err);
     }
@@ -104,7 +113,7 @@ export default function BarcodeHistoryPage() {
     link.href = URL.createObjectURL(blob);
     link.download = `barcode-${b.generatedId}.svg`;
     link.click();
-    await markAsPrinted(b.id); // ✅ mark as Printed
+    await markAsPrinted(b.id);
   };
 
   return (
@@ -156,15 +165,14 @@ export default function BarcodeHistoryPage() {
                 <div className="bg-gray-50 border rounded-lg p-3 max-h-36 overflow-hidden flex justify-center items-center">
                   {b.format === "QR" ? (
                     <QRCode value={b.generatedId} size={100} />
-                  ) : (
+                  ) : isValidBarcode(b.format, b.generatedId) ? (
                     <svg
                       id={`barcode-svg-${b.id}`}
                       className="w-full max-w-full h-auto object-contain"
                       ref={(el) => {
                         if (el) {
                           try {
-                            let id = b.generatedId?.trim();
-                            if (!id) return;
+                            let id = b.generatedId.trim();
                             if (["UPC", "EAN13"].includes(b.format)) {
                               id = id.replace(/\D/g, "");
                             }
@@ -180,6 +188,8 @@ export default function BarcodeHistoryPage() {
                         }
                       }}
                     />
+                  ) : (
+                    <p className="text-xs text-red-500">⚠ Invalid barcode for format {b.format}</p>
                   )}
                 </div>
 
@@ -229,8 +239,29 @@ export default function BarcodeHistoryPage() {
                 >
                   {b.format === "QR" ? (
                     <QRCode value={b.generatedId} size={128} />
+                  ) : isValidBarcode(b.format, b.generatedId) ? (
+                    <svg
+                      ref={(el) => {
+                        if (el) {
+                          try {
+                            let id = b.generatedId.trim();
+                            if (["UPC", "EAN13"].includes(b.format)) {
+                              id = id.replace(/\D/g, "");
+                            }
+                            JsBarcode(el, id, {
+                              format: b.format,
+                              displayValue: true,
+                              width: 2,
+                              height: 80,
+                            });
+                          } catch (err) {
+                            console.error(`Export error for ${b.id}`, err);
+                          }
+                        }
+                      }}
+                    />
                   ) : (
-                    <svg id={`barcode-svg-${b.id}`} />
+                    <p>Invalid export</p>
                   )}
                 </div>
               </div>
@@ -241,4 +272,3 @@ export default function BarcodeHistoryPage() {
     </div>
   );
 }
-        
