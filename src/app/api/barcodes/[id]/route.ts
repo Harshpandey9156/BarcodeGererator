@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../../lib/db";
 import { barcodes } from "../../../../../db/schema";
-
 import { eq } from "drizzle-orm";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const id = parseInt(params.id);
+  const id = parseInt(context.params.id);
+
+  if (isNaN(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   const result = await db
     .select()
@@ -21,5 +24,3 @@ export async function GET(
 
   return NextResponse.json(result[0]);
 }
-
-

@@ -14,8 +14,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 🔍 Duplicate check: existing SKU or generatedId
-    const existing = await db
+
+    //   check the dublicacy of the data
+     const existing = await db
       .select()
       .from(barcodes)
       .where(or(eq(barcodes.sku, sku), eq(barcodes.generatedId, generatedId)));
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
     if (existing.length > 0) {
       return NextResponse.json({ error: "Duplicate entry" }, { status: 409 });
     }
-
+    // Insert the new barcode into the database
     await db.insert(barcodes).values({
       itemName,
       sku,

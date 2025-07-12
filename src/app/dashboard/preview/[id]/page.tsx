@@ -32,7 +32,8 @@ export default function BarcodePreviewPage() {
       .then((data) => setBarcode(data))
       .catch(() => router.push("/dashboard/history"))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, router]);
+  
 
   const markAsPrinted = async () => {
     if (!barcode || barcode.status === "Printed") return;
