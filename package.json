@@ -1,0 +1,42 @@
+{
+  "name": "barcode-gen-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "dotenv": "^17.1.0",
+    "drizzle-orm": "^0.44.2",
+    "html2canvas": "^1.4.1",
+    "jsbarcode": "^3.12.1",
+    "jspdf": "^3.0.1",
+    "lucide-react": "^0.525.0",
+    "next": "15.3.5",
+    "next-auth": "^4.24.11",
+    "pdfkit": "^0.17.1",
+    "pg": "^8.16.3",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.60.0",
+    "react-hot-toast": "^2.5.2",
+    "react-qr-code": "^2.0.18"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.4",
+    "@types/pg": "^8.15.4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.4",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.5",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
