@@ -107,7 +107,7 @@ export default function BarcodePreviewPage() {
                 ref={(el) => {
                   if (!el) return;
                   try {
-                    let id = barcode.generatedId.trim();
+                    const id = barcode.generatedId.trim();
                     if (barcode.format === "EAN13" && !isValidEAN13(id)) {
                       throw new Error("Invalid EAN13 code");
                     }

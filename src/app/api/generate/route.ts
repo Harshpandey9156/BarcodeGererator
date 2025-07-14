@@ -2,41 +2,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../lib/db";
 import { barcodes } from "../../../../db/schema";
+// import { NextRequest, NextResponse } from "next/server";
+// import { db } from "../../../../../lib/db";
+// import { barcodes } from "../../../../../db/schema";
+import { eq } from "drizzle-orm";
 
-import { eq, or } from "drizzle-orm";
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { itemName, sku, batchNo, category, format, generatedId } = body;
-
-    if (!itemName || !sku || !format || !generatedId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-
-    //   check the dublicacy of the data
-     const existing = await db
-      .select()
-      .from(barcodes)
-      .where(or(eq(barcodes.sku, sku), eq(barcodes.generatedId, generatedId)));
-
-    if (existing.length > 0) {
-      return NextResponse.json({ error: "Duplicate entry" }, { status: 409 });
-    }
-    // Insert the new barcode into the database
-    await db.insert(barcodes).values({
-      itemName,
-      sku,
-      batchNo,
-      category,
-      format,
-      generatedId,
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error saving barcode:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+ export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const parsedId = parseInt(params.id);
+  if (isNaN(parsedId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
+
+  //  checking  for the 
+  const result = await db
+    .select()
+    .from(barcodes)
+    .where(eq(barcodes.id, parsedId));
+
+  if (result.length === 0) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(result[0]);
 }
