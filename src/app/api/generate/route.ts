@@ -2,22 +2,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../lib/db";
 import { barcodes } from "../../../../db/schema";
-// import { NextRequest, NextResponse } from "next/server";
-// import { db } from "../../../../../lib/db";
-// import { barcodes } from "../../../../../db/schema";
+ 
 import { eq } from "drizzle-orm";
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
 
- export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const parsedId = parseInt(params.id);
-  if (isNaN(parsedId)) {
+  if (!id || isNaN(Number(id))) {
     return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
-  //  checking  for the 
-  const result = await db
-    .select()
-    .from(barcodes)
-    .where(eq(barcodes.id, parsedId));
+  const result = await db.select().from(barcodes).where(eq(barcodes.id, Number(id)));
 
   if (result.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
