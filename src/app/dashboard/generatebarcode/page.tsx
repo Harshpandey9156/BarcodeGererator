@@ -122,8 +122,9 @@ export default function GenerateBarcodePage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
 
-            <label className="block text-sm font-medium text-gray-700">SKU</label>
+            <label className="block text-sm font-medium text-gray-700">SKU(Number)</label>
             <input
+              type="number"
               {...register("sku")}
               placeholder="SKU"
               className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
