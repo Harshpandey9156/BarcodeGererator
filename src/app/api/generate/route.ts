@@ -1,22 +1,38 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../lib/db";
 import { barcodes } from "../../../../db/schema";
- 
-import { eq } from "drizzle-orm";
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
+import { eq, or } from "drizzle-orm";
 
-  if (!id || isNaN(Number(id))) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { itemName, sku, batchNo, category, format, generatedId } = body;
+
+    if (!itemName || !sku || !format || !generatedId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const existing = await db
+      .select()
+      .from(barcodes)
+      .where(or(eq(barcodes.sku, sku), eq(barcodes.generatedId, generatedId)));
+
+    if (existing.length > 0) {
+      return NextResponse.json({ error: "Duplicate entry" }, { status: 409 });
+    }
+
+    await db.insert(barcodes).values({
+      itemName,
+      sku,
+      batchNo,
+      category,
+      format,
+      generatedId,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("POST /api/generate error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-
-  const result = await db.select().from(barcodes).where(eq(barcodes.id, Number(id)));
-
-  if (result.length === 0) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(result[0]);
 }
